@@ -56,11 +56,14 @@ class neural_network():
     def training(self, fdata, target, learningrate, iterations):
         RMSElist = []
         inputs = []
+        num_data = len(fdata)
+        num_hidden_layers = len(self.hnodes)
+        weights_size = len(self.weights)
         for iteration in range(0, iterations): #number of epochs
             output_history = []
-            for index in range(0, len(fdata)):
+            for index in range(0, num_data):
                 #Forward Propagation
-                for j in range(0, len(self.weights)):
+                for j in range(0, weights_size):
                     if j == 0:
                         w = self.weights[j]
                         wt = np.transpose(w[:-1]) #omit the bias weight, then transpose it
@@ -79,8 +82,8 @@ class neural_network():
                 
                 #Backward Propagation
                 dError = output_history[index] - target[index] #derivative of loss function SSE
-                for j in range(0, len(self.hnodes) + 1):
-                    l = len(self.hnodes) - j #for reversal of for index
+                for j in range(0, num_hidden_layers + 1):
+                    l = num_hidden_layers - j #for reversal of for index
                     if j == 0: #l == 3
                         self.sum_result[l - 1] = np.append(self.sum_result[l - 1], 1)
                         weight_nobias = self.weights[j - 1]
@@ -107,8 +110,8 @@ class neural_network():
                                     updated_weight = self.weights[l][n, m] - np.dot(np.dot(learningrate, self.dElist[j - 1][m]), self.sum_result[l - 1][n])
                                     self.weights[l][n, m] = updated_weight
             
-            SSE = np.sum([(target[index] - output_history[index]) ** 2 for index in range(0, len(fdata))])
-            RMSE = np.sqrt(SSE/len(fdata))
+            SSE = np.sum([(target[index] - output_history[index]) ** 2 for index in range(0, num_data)])
+            RMSE = np.sqrt(SSE/num_data)
             print('Training RMSE:', iteration, RMSE)
             RMSElist.append(RMSE)
         print("\nTraining RMSE: ", RMSE)
@@ -158,7 +161,7 @@ class neural_network():
 
 csvfile = import_csv('./dataset/energy_efficiency_data.csv')
 new_dataset = []
-[new_dataset.append(csvfile[row]) for row in range(1,769)] #row 0 omitted, but arrays still in str
+[new_dataset.append(csvfile[row]) for row in range(1,769)] #row 0 (header) omitted, but arrays still in str
 new_dataset = np.asfarray(new_dataset, float) #str to float
 orientation_encoding = one_hot_encoding(new_dataset[:,5], 4)
 glazing_dist_encoding = one_hot_encoding(new_dataset[:,7], 6)
